@@ -36,11 +36,13 @@ import Foundation
 
 // swiftlint:disable file_length
 
+@MainActor
 public protocol ResolverRegistering {
     static func registerAllServices()
 }
 
 /// The Resolving protocol is used to make the Resolver registries available to a given class.
+@MainActor
 public protocol Resolving {
     var resolver: Resolver { get }
 }
@@ -53,6 +55,7 @@ extension Resolving {
 
 /// Resolver is a Dependency Injection registry that registers Services for later resolution and
 /// injection into newly constructed instances.
+@MainActor
 public final class Resolver {
 
     // MARK: - Defaults
@@ -427,6 +430,7 @@ extension Resolver {
 private var registrationNeeded: Bool = true
 
 @inline(__always)
+@MainActor
 private func registrationCheck() {
     guard registrationNeeded else {
         return
@@ -445,6 +449,7 @@ public typealias ResolverFactoryMutator<Service> = (_ resolver: Resolver, _ serv
 public typealias ResolverFactoryMutatorArgumentsN<Service> = (_ resolver: Resolver, _ service: Service, _ args: Resolver.Args) -> Void
 
 /// A ResolverOptions instance is returned by a registration function in order to allow additonal configuratiom. (e.g. scopes, etc.)
+@MainActor
 public struct ResolverOptions<Service> {
 
     // MARK: - Parameters
@@ -507,6 +512,7 @@ public struct ResolverOptions<Service> {
 }
 
 /// ResolverRegistration base class provides storage for the registration keys, scope, and property mutator.
+@MainActor
 public final class ResolverRegistration<Service> {
 
     fileprivate let key: Int
@@ -542,10 +548,12 @@ public final class ResolverRegistration<Service> {
 // Scopes
 
 /// Resolver scopes exist to control when resolution occurs and how resolved instances are cached. (If at all.)
+@MainActor
 public protocol ResolverScopeType: AnyObject {
     func resolve<Service>(resolver: Resolver, registration: ResolverRegistration<Service>, args: Any?) -> Service?
 }
 
+@MainActor
 public class ResolverScope: ResolverScopeType {
 
     // Moved definitions to ResolverScope to allow for dot notation access
@@ -584,6 +592,7 @@ extension Resolver {
 }
 
 /// Cached services exist for lifetime of the app or until their cache is reset.
+@MainActor
 public class ResolverScopeCache: ResolverScope {
 
     public override init() {}
@@ -697,6 +706,7 @@ public extension UIViewController {
 ///
 /// Wrapped dependent service is resolved immediately using Resolver.root upon struct initialization.
 ///
+@MainActor
 @propertyWrapper public struct Injected<Service> {
     private var service: Service
     public init() {
@@ -719,6 +729,7 @@ public extension UIViewController {
 ///
 /// If available, wrapped dependent service is resolved immediately using Resolver.root upon struct initialization.
 ///
+@MainActor
 @propertyWrapper public struct OptionalInjected<Service> {
     private var service: Service?
     public init() {
@@ -741,6 +752,7 @@ public extension UIViewController {
 ///
 /// Wrapped dependent service is not resolved until service is accessed.
 ///
+@MainActor
 @propertyWrapper public struct LazyInjected<Service> {
     private var lock = Resolver.lock
     private var initialize: Bool = true
@@ -790,6 +802,7 @@ public extension UIViewController {
 ///
 /// Wrapped dependent service is not resolved until service is accessed.
 ///
+@MainActor
 @propertyWrapper public struct WeakLazyInjected<Service> {
     private var lock = Resolver.lock
     private var initialize: Bool = true
@@ -840,6 +853,7 @@ public extension UIViewController {
 /// Wrapped dependent service is resolved immediately using Resolver.root upon struct initialization.
 ///
 @available(OSX 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+@MainActor
 @propertyWrapper public struct InjectedObject<Service>: DynamicProperty where Service: ObservableObject {
     @ObservedObject private var service: Service
     public init() {
